@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">QuizApp</string>
+    <string name="quiz_title">Quiz</string>
+    <string name="gallery_title">Gallery</string>
+</resources>

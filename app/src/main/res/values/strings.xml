@@ -2,4 +2,9 @@
     <string name="app_name">QuizApp</string>
     <string name="quiz_title">Quiz</string>
     <string name="gallery_title">Gallery</string>
+    <string name="add_photo_title">Add Photo to Gallery</string>
+    <string name="add_name">Click to add name for photo</string>
+    <string name="save_photo">Save</string>
+    <string name="add_photo_desc">Click to add photo</string>
+    <string name="add_photo">Add Photo</string>
 </resources>

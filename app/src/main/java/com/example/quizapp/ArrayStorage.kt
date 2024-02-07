@@ -21,13 +21,11 @@ object ArrayStorage {
             }
         } catch (e: FileNotFoundException) {
             // Handle file not found error
-            null
-        } catch (e: IOException) {
-            // Handle IO exception
-            null
-        } catch (e: ClassNotFoundException) {
-            // Handle class not found exception
-            null
+            return arrayOf(
+                Photo("mcdonalds", "McDonald's"),
+                Photo("nike", "Nike"),
+                Photo("pepsi", "Pepsi")
+            )
         }
     }
 }

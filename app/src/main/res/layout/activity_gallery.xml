@@ -9,15 +9,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <GridLayout
             android:id="@+id/photosLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:columnCount="3"
+            android:rowCount="0"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <!-- ImageButtons for displaying photos will be added programmatically here -->
-        </LinearLayout>
+        </GridLayout>
 
     </ScrollView>
 

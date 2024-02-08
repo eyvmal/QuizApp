@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import java.io.File
 import kotlin.random.Random
 
@@ -63,6 +64,10 @@ class QuizActivity : AppCompatActivity() {
         if (answer == correctAnswer) {
             score++
             updateScoreTextView()
+            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Wrong! Correct answer was $correctAnswer", Toast.LENGTH_SHORT).show()
+
         }
 
         // Move to the next question
@@ -74,6 +79,7 @@ class QuizActivity : AppCompatActivity() {
             // Handle end of game logic.
             // For now, it just finishes the Activity
             finish()
+            Toast.makeText(this, "Finished! Score $score out of $currentIndex", Toast.LENGTH_SHORT).show()
         }
     }
 

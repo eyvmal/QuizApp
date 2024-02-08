@@ -23,7 +23,7 @@ object ArrayStorage {
         } catch (e: FileNotFoundException) {
             // If photo_array.dat doesn't exist. Create this default array.
             return arrayOf(
-                Photo("mcdonalds", "McDonald's"),
+                Photo("mcdonalds", "McDonalds"),
                 Photo("nike", "Nike"),
                 Photo("pepsi", "Pepsi")
             )
@@ -32,7 +32,7 @@ object ArrayStorage {
 
     fun resetArray(context: Context) {
         val photoArray = arrayOf(
-            Photo("mcdonalds", "McDonald's"),
+            Photo("mcdonalds", "McDonalds"),
             Photo("nike", "Nike"),
             Photo("pepsi", "Pepsi")
         )

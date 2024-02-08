@@ -18,10 +18,14 @@ class MainActivity : AppCompatActivity() {
 
         // Add listeners to the buttons
         quizButton.setOnClickListener {
-            // Create an intent to navigate to the QuizActivity
-            // TODO: Only start if there are 3 or more items in the PhotoArray
-            val intent = Intent(this, QuizActivity::class.java)
-            startActivity(intent)
+            // Start the QuizActivity only if there are 3 or more items in the gallery
+            if ((ArrayStorage.loadArray(this)?.size ?: 0) >= 3) {
+                val intent = Intent(this, QuizActivity::class.java)
+                startActivity(intent)
+            } else {
+                // Show a toast saying there are not enough photos in gallery
+                Toast.makeText(this, "There must be at least 3 items in the gallery to start the quiz.", Toast.LENGTH_SHORT).show()
+            }
         }
         galleryButton.setOnClickListener {
             // Create an intent to navigate to the GalleryActivity

@@ -2,115 +2,81 @@ package com.example.quizapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.GridLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import android.util.Log
 import android.widget.Button
-import kotlin.math.ceil
-import java.io.File
-import android.graphics.BitmapFactory
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
+import android.util.Log
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
 
 class GalleryActivity : AppCompatActivity() {
+
+    private lateinit var recyclerView: RecyclerView
+    private var photoArray: Array<Photo>? = null
+    private lateinit var adapter: PhotoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
 
-        val quizButton = findViewById<Button>(R.id.button)
+        // Assign the loaded photo array to the class member
+        photoArray = ArrayStorage.loadArray(this)
+        displayPhotos()
 
-        quizButton.setOnClickListener {
+        val addPhotoButton = findViewById<Button>(R.id.button)
+        addPhotoButton.setOnClickListener {
             // Create an intent to navigate to the AddPhotoActivity
             val intent = Intent(this, AddPhotoActivity::class.java)
             finish()
             startActivity(intent)
         }
 
-        val loadedArray = ArrayStorage.loadArray(this)
-        displayPhotos(loadedArray)
+        val sortAZButton = findViewById<Button>(R.id.button6)
+        sortAZButton.setOnClickListener {
+            sortPhotosByDescription(true)
+        }
+
+        val sortZAButton = findViewById<Button>(R.id.button5)
+        sortZAButton.setOnClickListener {
+            sortPhotosByDescription(false)
+        }
     }
 
-    // Function to display the loaded array of Photo objects
-    private fun displayPhotos(photoArray: Array<Photo>?) {
-        if (photoArray != null) {
-            val photosLayout: GridLayout = findViewById(R.id.photosLayout)
-
-            photosLayout.rowCount = ceil(photoArray.size.toDouble() / 3).toInt()
-
-            for (i in photoArray.indices) {
-                val photo = photoArray[i]
-                val imageButton = ImageButton(this)
-                val imageButtonSize = resources.displayMetrics.widthPixels / 3 // Assuming 3 images per row
-                val layoutParams = GridLayout.LayoutParams().apply {
-                    width = imageButtonSize
-                    height = imageButtonSize
-                }
-                imageButton.layoutParams = layoutParams
-
-                // Try loading the image as a cache resource
-                val cacheImageFile = File(cacheDir, photo.fileName)
-                if (cacheImageFile.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(cacheImageFile.absolutePath)
-                    imageButton.setImageBitmap(bitmap)
-                } else {
-                    // Try loading the image as a drawable resource
-                    val resourceId = resources.getIdentifier(photo.fileName, "drawable", packageName)
-                    if (resourceId != 0) {
-                        imageButton.setImageResource(resourceId)
-                    } else {
-                        Log.e("Image Loading", "Failed to load image: ${photo.fileName}")
-                        continue
+    private fun displayPhotos() {
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.apply {
+            layoutManager = GridLayoutManager(this@GalleryActivity, 3)
+            adapter = photoArray?.let { array ->
+                // Define onDeleteClickListener here
+                val onDeleteClickListener: (Int) -> Unit = { clickedPosition ->
+                    photoArray?.let { array ->
+                        array.toMutableList().apply {
+                            removeAt(clickedPosition)
+                        }.also { updatedList ->
+                            photoArray = updatedList.toTypedArray()
+                            ArrayStorage.saveArray(this@GalleryActivity, updatedList.toTypedArray())
+                            // Update the adapter's dataset instead of creating a new adapter
+                            (adapter as? PhotoAdapter)?.updateDataSet(updatedList.toTypedArray())
+                        }
                     }
                 }
-
-                imageButton.scaleType = ImageView.ScaleType.FIT_CENTER
-                imageButton.contentDescription = photo.description
-
-                // Set click listener to display name with Toast
-                imageButton.setOnClickListener {
-                    Toast.makeText(this, photo.description, Toast.LENGTH_SHORT).show()
-                }
-
-                // Set long click listener to delete the photo
-                imageButton.setOnLongClickListener {
-                    deletePhoto(photoArray, i, cacheImageFile, photo.description)
-                    true // Return true to consume the long click event
-                }
-
-                photosLayout.addView(imageButton)
+                // Create a new instance of PhotoAdapter with the current array and onDeleteClickListener
+                PhotoAdapter(array, onDeleteClickListener)
             }
         }
     }
 
-    private fun deletePhoto(photoArray: Array<Photo>, index: Int, imageFile: File, fileDesc: String) {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Delete $fileDesc")
-        alertDialogBuilder.setMessage("Are you sure you want to delete $fileDesc?")
 
-        alertDialogBuilder.setPositiveButton("Yes") { _, _ ->
-            // Delete the image file from cache
-            if (imageFile.exists()) {
-                imageFile.delete()
+    private fun sortPhotosByDescription(ascending: Boolean) {
+        photoArray?.let { array ->
+            val sortedArray = array.copyOf() // Create a copy of the original array
+            sortedArray.sortBy { photo -> photo.description }
+            if (!ascending) {
+                sortedArray.reverse()
             }
-
-            // Remove the photo from the array
-            val updatedArray = photoArray.toMutableList()
-            updatedArray.removeAt(index)
-
-            // Save the updated array
-            ArrayStorage.saveArray(this, updatedArray.toTypedArray())
-
-            // Restart the activity to refresh
-            val intent = Intent(this, GalleryActivity::class.java)
-            finish()
-            startActivity(intent)
+            ArrayStorage.saveArray(this, sortedArray)
+            photoArray = sortedArray // Update the class member with the sorted array
+            displayPhotos()
         }
-
-        alertDialogBuilder.setNegativeButton("No") { _, _ -> }
-
-        alertDialogBuilder.create().show()
     }
 }

@@ -13,6 +13,7 @@ import android.widget.Toast
 import java.io.File
 import java.io.FileOutputStream
 import android.graphics.BitmapFactory
+import androidx.appcompat.content.res.AppCompatResources
 
 class AddPhotoActivity : AppCompatActivity() {
 
@@ -52,7 +53,7 @@ class AddPhotoActivity : AppCompatActivity() {
             val text = editText.text.toString().trim()
             // Check that there is both user input and a picture uploaded
             // Check if both user input and a picture are uploaded
-            if (text.isNotEmpty() && imageButton.drawable != getDrawable(R.drawable.plus)) {
+            if (text.isNotEmpty() && imageButton.drawable != AppCompatResources.getDrawable(this, R.drawable.plus)) {
                 // Check if the text contains only alphanumeric characters and space
                 if (text.matches(Regex("[a-zA-Z0-9 ]+"))) {
                     // Replace spaces with underscores and saves the image in cache

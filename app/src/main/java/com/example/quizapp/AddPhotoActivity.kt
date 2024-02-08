@@ -16,8 +16,12 @@ import android.graphics.BitmapFactory
 
 class AddPhotoActivity : AppCompatActivity() {
 
+    // Variable to store the user-uploaded picture
     private lateinit var selectedImageFile: File
 
+    // Define an activity result launcher for selecting an image.
+    // Check if the activity was successful.
+    // If so, save image to cache and set the src of the imageButton to the image.
     private val selectImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
@@ -33,38 +37,55 @@ class AddPhotoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_addphoto)
 
+        // Find and store a reference to the widgets
         val imageButton: ImageButton = findViewById(R.id.imageButton)
         val saveButton: Button = findViewById(R.id.button3)
         val editText: EditText = findViewById(R.id.editTextText)
 
+        // Add listeners to the widgets
         imageButton.setOnClickListener {
             openFileChooser()
         }
 
         saveButton.setOnClickListener {
-            val text = editText.text.toString()
+            // Store user input in a val and remove whitespace
+            val text = editText.text.toString().trim()
+            // Check that there is both user input and a picture uploaded
+            // Check if both user input and a picture are uploaded
             if (text.isNotEmpty() && imageButton.drawable != getDrawable(R.drawable.plus)) {
-                val imageName = text.replace("\\s+".toRegex(), "_") // Replace spaces with underscores
+                // Check if the text contains only alphanumeric characters and space
+                if (text.matches(Regex("[a-zA-Z0-9 ]+"))) {
+                    // Replace spaces with underscores and saves the image in cache
+                    val imageName = text.replace("\\s+".toRegex(), "_")
+                    val newImageFile = File(cacheDir, "$imageName.jpg")
+                    selectedImageFile.copyTo(newImageFile)
 
-                val newImageFile = File(cacheDir, "$imageName.jpg") // Ensure to add the file extension
-                selectedImageFile.copyTo(newImageFile) // Copy the contents to the new file
+                    // Create a new Photo object and save it to the PhotoArray
+                    val photo = Photo("$imageName.jpg", text)
+                    val loadedArray = ArrayStorage.loadArray(this)?.toMutableList() ?: mutableListOf()
+                    loadedArray.add(photo)
+                    ArrayStorage.saveArray(this, loadedArray.toTypedArray())
 
-                val photo = Photo("$imageName.jpg", text)
-                val loadedArray = ArrayStorage.loadArray(this)?.toMutableList() ?: mutableListOf()
-                loadedArray.add(photo)
-                ArrayStorage.saveArray(this, loadedArray.toTypedArray())
-                Toast.makeText(this, "Successful!", Toast.LENGTH_SHORT).show()
+                    // Create a toast showing the task was successful
+                    Toast.makeText(this, "New image saved to gallery!", Toast.LENGTH_SHORT).show()
 
-                // Finish the activity and go back to GalleryActivity
-                val intent = Intent(this, GalleryActivity::class.java)
-                finish()
-                startActivity(intent)
+                    // Finish the activity and go back to GalleryActivity
+                    val intent = Intent(this, GalleryActivity::class.java)
+                    finish()
+                    startActivity(intent)
+                } else {
+                    // Display an error message if the text contains non-alphanumeric characters
+                    Toast.makeText(this, "Text should only contain letters and numbers.", Toast.LENGTH_SHORT).show()
+                }
             } else {
-                // Show an error message stating what's wrong
+                // Display an error message if either user input or a picture is missing
+                Toast.makeText(this, "Please enter text and select an image.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
 
+    // Lets the user upload an image and launches the selectImageLauncher to handle the upload
     private fun openFileChooser() {
         val intent = Intent().apply {
             type = "image/*"
@@ -73,6 +94,8 @@ class AddPhotoActivity : AppCompatActivity() {
         selectImageLauncher.launch(intent)
     }
 
+    // Saves the image temporarily to cache.
+    // It's never deleted, but the next upload will overwrite it.
     private fun saveImageToTempLocation(inputStream: InputStream) {
         selectedImageFile = File(cacheDir, "temp_image.jpg")
         FileOutputStream(selectedImageFile).use { output ->
@@ -80,6 +103,7 @@ class AddPhotoActivity : AppCompatActivity() {
         }
     }
 
+    // Set the active src of the imageButton to file parameter
     private fun setImageFromFile(file: File) {
         val imageButton: ImageButton = findViewById(R.id.imageButton)
         val bitmap = BitmapFactory.decodeFile(file.absolutePath)

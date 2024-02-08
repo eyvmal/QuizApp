@@ -6,9 +6,11 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.GridLayout
 import androidx.appcompat.app.AppCompatActivity
-import android.graphics.Color
+import android.util.Log
 import android.widget.Button
 import kotlin.math.ceil
+import java.io.File
+import android.graphics.BitmapFactory
 
 class GalleryActivity : AppCompatActivity() {
 
@@ -37,17 +39,33 @@ class GalleryActivity : AppCompatActivity() {
 
             for (photo in photoArray) {
                 val imageButton = ImageButton(this)
-                val imageButtonSize =
-                    resources.displayMetrics.widthPixels / 3 // Assuming 3 images per row
+                val imageButtonSize = resources.displayMetrics.widthPixels / 3 // Assuming 3 images per row
                 val layoutParams = GridLayout.LayoutParams().apply {
                     width = imageButtonSize
                     height = imageButtonSize
                 }
                 imageButton.layoutParams = layoutParams
 
-                // Set image resource dynamically based on photo file name
-                val resourceId = resources.getIdentifier(photo.fileName, "drawable", packageName)
-                imageButton.setImageResource(resourceId)
+                // Check if the image file exists in the cache directory
+                val cacheImageFile = File(cacheDir, photo.fileName)
+                Log.d("Image Loading", "File path: ${cacheImageFile.absolutePath}")
+                if (cacheImageFile.exists()) {
+                    // Load the image from the cache directory
+                    val bitmap = BitmapFactory.decodeFile(cacheImageFile.absolutePath)
+                    imageButton.setImageBitmap(bitmap)
+                } else {
+                    // Try loading the image as a drawable resource
+                    val resourceId = resources.getIdentifier(photo.fileName, "drawable", packageName)
+                    if (resourceId != 0) {
+                        // Load the image from the drawable resources
+                        imageButton.setImageResource(resourceId)
+                    } else {
+                        // Log an error if the image cannot be found
+                        Log.e("Image Loading", "Failed to load image: ${photo.fileName}")
+                        continue  // Skip adding this image button
+                    }
+                }
+
                 imageButton.scaleType = ImageView.ScaleType.FIT_CENTER
                 imageButton.contentDescription = photo.description
                 photosLayout.addView(imageButton)

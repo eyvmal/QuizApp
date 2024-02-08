@@ -29,4 +29,16 @@ object ArrayStorage {
             )
         }
     }
+
+    fun resetArray(context: Context) {
+        val photoArray = arrayOf(
+            Photo("mcdonalds", "McDonald's"),
+            Photo("nike", "Nike"),
+            Photo("pepsi", "Pepsi")
+        )
+
+        ObjectOutputStream(context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE)).use { stream ->
+            stream.writeObject(photoArray)
+        }
+    }
 }

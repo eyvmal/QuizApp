@@ -7,4 +7,7 @@
     <string name="save_photo">Save</string>
     <string name="add_photo_desc">Click to add photo</string>
     <string name="add_photo">Add Photo</string>
+    <string name="answer_option">Option X</string>
+    <string name="quiz_photo_desc">Photo for quiz</string>
+    <string name="reset_button">Reset</string>
 </resources>

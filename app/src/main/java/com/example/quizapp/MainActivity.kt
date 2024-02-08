@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.content.Intent
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,6 +14,7 @@ class MainActivity : AppCompatActivity() {
         // Find and store a reference to the buttons
         val quizButton = findViewById<Button>(R.id.button)
         val galleryButton = findViewById<Button>(R.id.button2)
+        val resetButton = findViewById<Button>(R.id.button4)
 
         // Add listeners to the buttons
         quizButton.setOnClickListener {
@@ -25,5 +27,25 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, GalleryActivity::class.java)
             startActivity(intent)
         }
+        resetButton.setOnClickListener {
+            // Create an intent to navigate to the GalleryActivity
+            resetGallery()
+        }
     }
+
+    private fun resetGallery() {
+        val cacheDirectory = cacheDir
+        val jpgFiles = cacheDirectory.listFiles { file ->
+            file.isFile && file.extension == "jpg"
+        }
+
+        jpgFiles?.forEach { file ->
+            file.delete()
+        }
+
+        ArrayStorage.resetArray(this)
+
+        Toast.makeText(this, "Gallery is now reset!", Toast.LENGTH_SHORT).show()
+    }
+
 }

@@ -10,4 +10,5 @@
     <string name="answer_option">Option X</string>
     <string name="quiz_photo_desc">Photo for quiz</string>
     <string name="reset_button">Reset</string>
+    <string name="score">Score: %d</string>
 </resources>

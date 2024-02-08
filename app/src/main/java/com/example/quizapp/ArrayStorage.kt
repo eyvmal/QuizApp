@@ -20,7 +20,7 @@ object ArrayStorage {
                 stream.readObject() as Array<Photo>?
             }
         } catch (e: FileNotFoundException) {
-            // Handle file not found error
+            // If photo_array.dat doesn't exist. Create this default array.
             return arrayOf(
                 Photo("mcdonalds", "McDonald's"),
                 Photo("nike", "Nike"),

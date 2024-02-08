@@ -54,7 +54,11 @@ class AddPhotoActivity : AppCompatActivity() {
                 loadedArray.add(photo)
                 ArrayStorage.saveArray(this, loadedArray.toTypedArray())
                 Toast.makeText(this, "Successful!", Toast.LENGTH_SHORT).show()
+
+                // Finish the activity and go back to GalleryActivity
+                val intent = Intent(this, GalleryActivity::class.java)
                 finish()
+                startActivity(intent)
             } else {
                 // Show an error message stating what's wrong
             }

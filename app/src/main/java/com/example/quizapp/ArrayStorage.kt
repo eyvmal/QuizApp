@@ -17,6 +17,7 @@ object ArrayStorage {
     fun loadArray(context: Context): Array<Photo>? {
         return try {
             ObjectInputStream(context.openFileInput(FILE_NAME)).use { stream ->
+                @Suppress("UNCHECKED_CAST")
                 stream.readObject() as Array<Photo>?
             }
         } catch (e: FileNotFoundException) {

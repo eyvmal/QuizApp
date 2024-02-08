@@ -57,7 +57,7 @@ class QuizActivity : AppCompatActivity() {
     private fun checkAnswer(answer: String) {
         val correctAnswer = photoArray[currentIndex].description
 
-        // Add green/red buttons, maybe?!
+        // TODO: Add display green/red options to show the correct answer
 
         // Add score and update it if the answer is correct
         if (answer == correctAnswer) {

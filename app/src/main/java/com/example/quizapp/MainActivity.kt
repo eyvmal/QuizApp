@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         // Add listeners to the buttons
         quizButton.setOnClickListener {
             // Create an intent to navigate to the QuizActivity
+            // TODO: Only start if there are 3 or more items in the PhotoArray
             val intent = Intent(this, QuizActivity::class.java)
             startActivity(intent)
         }

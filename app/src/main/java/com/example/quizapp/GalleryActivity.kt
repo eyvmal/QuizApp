@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.GridLayoutManager
 
@@ -11,19 +12,18 @@ class GalleryActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private var photoArray: Array<Photo>? = null
-    private lateinit var adapter: PhotoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
 
-        // Assign the loaded photo array to the class member
+        // Assign the loaded photo array to the local variable
         photoArray = ArrayStorage.loadArray(this)
         displayPhotos()
 
+        // Configure the buttons
         val addPhotoButton = findViewById<Button>(R.id.button)
         addPhotoButton.setOnClickListener {
-            // Create an intent to navigate to the AddPhotoActivity
             val intent = Intent(this, AddPhotoActivity::class.java)
             finish()
             startActivity(intent)
@@ -40,23 +40,39 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
+    // Function to display the photos in gallery
     private fun displayPhotos() {
+        // Set up the recyclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.apply {
+            // Using a grid
             layoutManager = GridLayoutManager(this@GalleryActivity, 3)
             adapter = photoArray?.let { array ->
-                // Define onDeleteClickListener here
+                // Handle onDeleteClickListener
                 val onDeleteClickListener: (Int) -> Unit = { clickedPosition ->
-                    photoArray?.let { array ->
-                        array.toMutableList().apply {
-                            removeAt(clickedPosition)
-                        }.also { updatedList ->
-                            photoArray = updatedList.toTypedArray()
-                            ArrayStorage.saveArray(this@GalleryActivity, updatedList.toTypedArray())
-                            // Update the adapter's dataset instead of creating a new adapter
-                            (adapter as? PhotoAdapter)?.updateDataSet(updatedList.toTypedArray())
+                    // With an alert prompt
+                    val alertDialogBuilder = AlertDialog.Builder(this@GalleryActivity)
+                    alertDialogBuilder.apply {
+                        setTitle("Delete Photo")
+                        setMessage("Are you sure you want to delete this photo?")
+                        setPositiveButton("Yes") { _, _ ->
+                            // Proceed to delete photo
+                            photoArray?.let { array ->
+                                array.toMutableList().apply {
+                                    removeAt(clickedPosition)
+                                }.also { updatedList ->
+                                    photoArray = updatedList.toTypedArray()
+                                    ArrayStorage.saveArray(this@GalleryActivity, updatedList.toTypedArray())
+                                    // Update the adapter's dataset instead of creating a new adapter
+                                    (adapter as? PhotoAdapter)?.updateDataSet(updatedList.toTypedArray())
+                                }
+                            }
+                        }
+                        setNegativeButton("No") { dialog, _ ->
+                            dialog.dismiss()
                         }
                     }
+                    alertDialogBuilder.create().show()
                 }
                 // Create a new instance of PhotoAdapter with the current array and onDeleteClickListener
                 PhotoAdapter(array, onDeleteClickListener)
@@ -65,15 +81,17 @@ class GalleryActivity : AppCompatActivity() {
     }
 
 
+    // Function to sort photos. True -> A-Z, False -> Z-A
     private fun sortPhotosByDescription(ascending: Boolean) {
         photoArray?.let { array ->
-            val sortedArray = array.copyOf() // Create a copy of the original array
+            val sortedArray = array.copyOf()
             sortedArray.sortBy { photo -> photo.description }
             if (!ascending) {
                 sortedArray.reverse()
             }
             ArrayStorage.saveArray(this, sortedArray)
-            photoArray = sortedArray // Update the class member with the sorted array
+            // Update the array
+            photoArray = sortedArray
             displayPhotos()
         }
     }

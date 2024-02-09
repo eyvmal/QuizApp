@@ -7,6 +7,7 @@ import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.GridLayoutManager
+import java.io.File
 
 class GalleryActivity : AppCompatActivity() {
 
@@ -40,6 +41,38 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
+    // Function to handle the deletion of a photo
+    private fun handleDeletePhoto(clickedPosition: Int) {
+        val alertDialogBuilder = AlertDialog.Builder(this@GalleryActivity)
+        alertDialogBuilder.apply {
+            setTitle("Delete Photo")
+            setMessage("Are you sure you want to delete this photo?")
+            setPositiveButton("Yes") { _, _ ->
+                // Proceed to delete photo
+                photoArray?.let { array ->
+                    // Delete image from cache
+                    val cacheImageFile = File(cacheDir, array[clickedPosition].fileName)
+                    if (cacheImageFile.exists()) {
+                        cacheImageFile.delete()
+                    }
+                    // Remove photo from array
+                    array.toMutableList().apply {
+                        removeAt(clickedPosition)
+                    }.also { updatedList ->
+                        photoArray = updatedList.toTypedArray()
+                        ArrayStorage.saveArray(this@GalleryActivity, updatedList.toTypedArray())
+                        // Update the adapter's dataset instead of creating a new adapter
+                        (recyclerView.adapter as? PhotoAdapter)?.updateDataSet(updatedList.toTypedArray())
+                    }
+                }
+            }
+            setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+        }
+        alertDialogBuilder.create().show()
+    }
+
     // Function to display the photos in gallery
     private fun displayPhotos() {
         // Set up the recyclerView
@@ -48,31 +81,10 @@ class GalleryActivity : AppCompatActivity() {
             // Using a grid
             layoutManager = GridLayoutManager(this@GalleryActivity, 3)
             adapter = photoArray?.let { array ->
-                // Handle onDeleteClickListener
+                // Create onDeleteClickListener
                 val onDeleteClickListener: (Int) -> Unit = { clickedPosition ->
-                    // With an alert prompt
-                    val alertDialogBuilder = AlertDialog.Builder(this@GalleryActivity)
-                    alertDialogBuilder.apply {
-                        setTitle("Delete Photo")
-                        setMessage("Are you sure you want to delete this photo?")
-                        setPositiveButton("Yes") { _, _ ->
-                            // Proceed to delete photo
-                            photoArray?.let { array ->
-                                array.toMutableList().apply {
-                                    removeAt(clickedPosition)
-                                }.also { updatedList ->
-                                    photoArray = updatedList.toTypedArray()
-                                    ArrayStorage.saveArray(this@GalleryActivity, updatedList.toTypedArray())
-                                    // Update the adapter's dataset instead of creating a new adapter
-                                    (adapter as? PhotoAdapter)?.updateDataSet(updatedList.toTypedArray())
-                                }
-                            }
-                        }
-                        setNegativeButton("No") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                    }
-                    alertDialogBuilder.create().show()
+                    // Handle delete action
+                    handleDeletePhoto(clickedPosition)
                 }
                 // Create a new instance of PhotoAdapter with the current array and onDeleteClickListener
                 PhotoAdapter(array, onDeleteClickListener)

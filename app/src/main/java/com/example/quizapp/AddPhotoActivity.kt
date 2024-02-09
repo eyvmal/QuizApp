@@ -56,24 +56,27 @@ class AddPhotoActivity : AppCompatActivity() {
             if (text.isNotEmpty() && imageButton.drawable != AppCompatResources.getDrawable(this, R.drawable.plus)) {
                 // Check if the text contains only alphanumeric characters and space
                 if (text.matches(Regex("[a-zA-Z0-9 ]+"))) {
-                    // Replace spaces with underscores and saves the image in cache
+                    // Replace spaces with underscores
                     val imageName = text.replace("\\s+".toRegex(), "_")
-                    val newImageFile = File(cacheDir, "$imageName.jpg")
-                    selectedImageFile.copyTo(newImageFile)
 
-                    // Create a new Photo object and save it to the PhotoArray
-                    val photo = Photo("$imageName.jpg", text)
-                    val loadedArray = ArrayStorage.loadArray(this)?.toMutableList() ?: mutableListOf()
-                    loadedArray.add(photo)
-                    ArrayStorage.saveArray(this, loadedArray.toTypedArray())
+                    // Tries to save image to cache
+                    if (saveFile(imageName)) {
+                        // Create a new Photo object and save it to the PhotoArray
+                        val photo = Photo("$imageName.jpg", text)
+                        val loadedArray = ArrayStorage.loadArray(this)?.toMutableList() ?: mutableListOf()
+                        loadedArray.add(photo)
+                        ArrayStorage.saveArray(this, loadedArray.toTypedArray())
 
-                    // Create a toast showing the task was successful
-                    Toast.makeText(this, "New image saved to gallery!", Toast.LENGTH_SHORT).show()
+                        // Create a toast showing the task was successful
+                        Toast.makeText(this, "New image saved to gallery!", Toast.LENGTH_SHORT).show()
 
-                    // Finish the activity and go back to GalleryActivity
-                    val intent = Intent(this, GalleryActivity::class.java)
-                    finish()
-                    startActivity(intent)
+                        // Finish the activity and go back to GalleryActivity
+                        val intent = Intent(this, GalleryActivity::class.java)
+                        finish()
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "Image with this name already exists.", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     // Display an error message if the text contains non-alphanumeric characters
                     Toast.makeText(this, "Text should only contain letters and numbers.", Toast.LENGTH_SHORT).show()
@@ -84,6 +87,16 @@ class AddPhotoActivity : AppCompatActivity() {
                     .show()
             }
         }
+    }
+
+    private fun saveFile(imageName: String) : Boolean {
+        val newImageFile = File(cacheDir, "$imageName.jpg")
+        // Check if file already exists before trying to save new file
+        if (!newImageFile.exists()) {
+            selectedImageFile.copyTo(newImageFile)
+            return true
+        }
+        return false
     }
 
     // Lets the user upload an image and launches the selectImageLauncher to handle the upload

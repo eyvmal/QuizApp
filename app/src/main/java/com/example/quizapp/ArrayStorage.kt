@@ -30,6 +30,7 @@ object ArrayStorage {
         }
     }
 
+    // Reset the array to the default array
     fun resetArray(context: Context) {
         val photoArray = arrayOf(
             Photo("mcdonalds", "McDonalds"),

@@ -20,20 +20,6 @@ class AddPhotoActivity : AppCompatActivity() {
     // Variable to store the user-uploaded picture
     private lateinit var selectedImageFile: File
 
-    // Define an activity result launcher for selecting an image.
-    // Check if the activity was successful.
-    // If so, save image to cache and set the src of the imageButton to the image.
-    private val selectImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data: Intent? = result.data
-            val inputStream: InputStream? = data?.data?.let { contentResolver.openInputStream(it) }
-            inputStream?.let {
-                saveImageToTempLocation(it)
-                setImageFromFile(selectedImageFile)
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_addphoto)
@@ -43,38 +29,35 @@ class AddPhotoActivity : AppCompatActivity() {
         val saveButton: Button = findViewById(R.id.button3)
         val editText: EditText = findViewById(R.id.editTextText)
 
-        // Add listeners to the widgets
+        // Add listeners to the buttons
         imageButton.setOnClickListener {
             openFileChooser()
         }
 
         saveButton.setOnClickListener {
-            // Store user input in a val and remove whitespace
+            // Store the user input in a val and remove whitespace
             val text = editText.text.toString().trim()
             // Check that there is both user input and a picture uploaded
-            // Check if both user input and a picture are uploaded
             if (text.isNotEmpty() && imageButton.drawable != AppCompatResources.getDrawable(this, R.drawable.plus)) {
                 // Check if the text contains only alphanumeric characters and space
                 if (text.matches(Regex("[a-zA-Z0-9 ]+"))) {
-                    // Replace spaces with underscores
+                    // Replace spaces with underscores to save image as file
                     val imageName = text.replace("\\s+".toRegex(), "_")
-
-                    // Tries to save image to cache
-                    if (saveFile(imageName)) {
+                    // Try to save image to cache
+                    if (saveFile(imageName)) { // If successful
                         // Create a new Photo object and save it to the PhotoArray
                         val photo = Photo("$imageName.jpg", text)
                         val loadedArray = ArrayStorage.loadArray(this)?.toMutableList() ?: mutableListOf()
                         loadedArray.add(photo)
                         ArrayStorage.saveArray(this, loadedArray.toTypedArray())
-
-                        // Create a toast showing the task was successful
                         Toast.makeText(this, "New image saved to gallery!", Toast.LENGTH_SHORT).show()
 
-                        // Finish the activity and go back to GalleryActivity
+                        // Finish the activity and go back to the GalleryActivity
                         val intent = Intent(this, GalleryActivity::class.java)
                         finish()
                         startActivity(intent)
                     } else {
+                        // Display an error if a photo with this name already exists
                         Toast.makeText(this, "Image with this name already exists.", Toast.LENGTH_SHORT).show()
                     }
                 } else {
@@ -99,6 +82,22 @@ class AddPhotoActivity : AppCompatActivity() {
         return false
     }
 
+    // Define an activity result launcher for selecting an image.
+    // Check if the activity was successful.
+    // If so, save image to cache and set the src of the imageButton to the image.
+    private val selectImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            val inputStream: InputStream? = data?.data?.let { contentResolver.openInputStream(it) }
+            inputStream?.let {
+                saveImageToTempLocation(it)
+                setImageFromFile(selectedImageFile)
+            }
+        } else {
+            Toast.makeText(this, "Error uploading photo.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Lets the user upload an image and launches the selectImageLauncher to handle the upload
     private fun openFileChooser() {
         val intent = Intent().apply {
@@ -109,7 +108,6 @@ class AddPhotoActivity : AppCompatActivity() {
     }
 
     // Saves the image temporarily to cache.
-    // It's never deleted, but the next upload will overwrite it.
     private fun saveImageToTempLocation(inputStream: InputStream) {
         selectedImageFile = File(cacheDir, "temp_image.jpg")
         FileOutputStream(selectedImageFile).use { output ->

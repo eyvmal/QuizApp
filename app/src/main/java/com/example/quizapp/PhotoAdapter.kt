@@ -21,27 +21,6 @@ class PhotoAdapter(
         return PhotoViewHolder(view)
     }
 
-    // Bind data to the ViewHolder
-    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        val photo = photoArray[position]
-        val cacheImageFile = File(holder.itemView.context.cacheDir, photo.fileName)
-
-        if (cacheImageFile.exists()) {  // If the photo is stored in cache
-            val bitmap = BitmapFactory.decodeFile(cacheImageFile.absolutePath)
-            holder.imageButton.setImageBitmap(bitmap)
-        } else {  // If not, it has to be stored in @drawable
-            val resourceId = holder.itemView.context.resources.getIdentifier(photo.fileName, "drawable", holder.itemView.context.packageName)
-            if (resourceId != 0) {
-                holder.imageButton.setImageResource(resourceId)
-            }
-        }
-        holder.bind(photo)
-    }
-
-    override fun getItemCount(): Int {
-        return photoArray.size
-    }
-
     // Define ViewHolder for each photo item
     inner class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageButton: ImageButton = itemView.findViewById(R.id.imageButton)
@@ -61,6 +40,27 @@ class PhotoAdapter(
                 onDeleteClickListener(bindingAdapterPosition)
             }
         }
+    }
+
+    // Bind data to the ViewHolder
+    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
+        val photo = photoArray[position]
+        val cacheImageFile = File(holder.itemView.context.cacheDir, photo.fileName)
+
+        if (cacheImageFile.exists()) {  // If the photo is stored in cache
+            val bitmap = BitmapFactory.decodeFile(cacheImageFile.absolutePath)
+            holder.imageButton.setImageBitmap(bitmap)
+        } else {  // If not, it has to be stored in @drawable
+            val resourceId = holder.itemView.context.resources.getIdentifier(photo.fileName, "drawable", holder.itemView.context.packageName)
+            if (resourceId != 0) {
+                holder.imageButton.setImageResource(resourceId)
+            }
+        }
+        holder.bind(photo)
+    }
+
+    override fun getItemCount(): Int {
+        return photoArray.size
     }
 
     // Function to update the dataset

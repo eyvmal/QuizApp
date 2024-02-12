@@ -19,11 +19,12 @@ class MainActivity : AppCompatActivity() {
         // Add listeners to the buttons
         quizButton.setOnClickListener {
             // Start the QuizActivity only if there are 3 or more items in the gallery
+            // If value is null, its handled as 0
             if ((ArrayStorage.loadArray(this)?.size ?: 0) >= 3) {
                 val intent = Intent(this, QuizActivity::class.java)
                 startActivity(intent)
             } else {
-                // Show a toast saying there are not enough photos in gallery
+                // If there's not enough photos in the gallery
                 Toast.makeText(this, "There must be at least 3 items in the gallery to start the quiz.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         resetButton.setOnClickListener {
-            // Create an intent to navigate to the GalleryActivity
+            // Resets the gallery to default
             resetGallery()
         }
     }
@@ -43,13 +44,12 @@ class MainActivity : AppCompatActivity() {
         val jpgFiles = cacheDirectory.listFiles { file ->
             file.isFile && file.extension == "jpg"
         }
-
+        // Delete all image files in cache
         jpgFiles?.forEach { file ->
             file.delete()
         }
-
+        // Reset the array to its default, with the 3 default photos
         ArrayStorage.resetArray(this)
-
         Toast.makeText(this, "Gallery is now reset!", Toast.LENGTH_SHORT).show()
     }
 

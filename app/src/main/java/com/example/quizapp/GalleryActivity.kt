@@ -18,7 +18,7 @@ class GalleryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
 
-        // Assign the loaded photo array to the local variable
+        // Assign the loaded photo array to the local variable and display photos
         photoArray = ArrayStorage.loadArray(this)
         displayPhotos()
 
@@ -32,17 +32,18 @@ class GalleryActivity : AppCompatActivity() {
 
         val sortAZButton = findViewById<Button>(R.id.button6)
         sortAZButton.setOnClickListener {
-            sortPhotosByDescription(true)
+            sortPhotosByDescription(true) // True is alphabetically
         }
 
         val sortZAButton = findViewById<Button>(R.id.button5)
         sortZAButton.setOnClickListener {
-            sortPhotosByDescription(false)
+            sortPhotosByDescription(false) // False is reversed alphabetically
         }
     }
 
     // Function to handle the deletion of a photo
     private fun handleDeletePhoto(clickedPosition: Int) {
+        // Show the user an alert prompt
         val alertDialogBuilder = AlertDialog.Builder(this@GalleryActivity)
         alertDialogBuilder.apply {
             setTitle("Delete Photo")
@@ -55,13 +56,14 @@ class GalleryActivity : AppCompatActivity() {
                     if (cacheImageFile.exists()) {
                         cacheImageFile.delete()
                     }
-                    // Remove photo from array
+                    // Remove photo from the PhotoArray
                     array.toMutableList().apply {
                         removeAt(clickedPosition)
                     }.also { updatedList ->
+                        // Save the new array where the photo is removed
                         photoArray = updatedList.toTypedArray()
                         ArrayStorage.saveArray(this@GalleryActivity, updatedList.toTypedArray())
-                        // Update the adapter's dataset instead of creating a new adapter
+                        // Update the adapter's dataset
                         (recyclerView.adapter as? PhotoAdapter)?.updateDataSet(updatedList.toTypedArray())
                     }
                 }
@@ -78,12 +80,12 @@ class GalleryActivity : AppCompatActivity() {
         // Set up the recyclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.apply {
-            // Using a grid
+            // Using a gridlayout of width 3
             layoutManager = GridLayoutManager(this@GalleryActivity, 3)
             adapter = photoArray?.let { array ->
-                // Create onDeleteClickListener
+                // Create onDeleteClickListener for each photo
                 val onDeleteClickListener: (Int) -> Unit = { clickedPosition ->
-                    // Handle delete action
+                    // add delete action
                     handleDeletePhoto(clickedPosition)
                 }
                 // Create a new instance of PhotoAdapter with the current array and onDeleteClickListener
@@ -91,7 +93,6 @@ class GalleryActivity : AppCompatActivity() {
             }
         }
     }
-
 
     // Function to sort photos. True -> A-Z, False -> Z-A
     private fun sortPhotosByDescription(ascending: Boolean) {
@@ -104,7 +105,8 @@ class GalleryActivity : AppCompatActivity() {
             ArrayStorage.saveArray(this, sortedArray)
             // Update the array
             photoArray = sortedArray
-            displayPhotos()
+            // Update the adapter's dataset
+            (recyclerView.adapter as? PhotoAdapter)?.updateDataSet(sortedArray)
         }
     }
 }
